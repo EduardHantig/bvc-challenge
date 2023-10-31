@@ -20,9 +20,8 @@ The Exchange Service API provides functionalities to fetch exchange rates from a
 
 Before running the application, make sure to set the following environment variables:
 
-- `EXCHANGE_API_LIVE_URL`: The URL for the live exchange rate API. His value should be `https://api.exchangerate.host/live`
-- `EXCHANGE_API_ACCESS_KEY`: The access key to authenticate requests to the exchange rate API. You should take it from your created account on `https://exchangerate.host`
-
+- `EXCHANGE_API_LIVE_URL`: The URL for the live exchange rate API. His value should be `http://api.exchangerate.host/live`
+- `EXCHANGE_API_ACCESS_KEY`: The access key to authenticate requests to the exchange rate API. You should take it from your created account on `https://exchangerate.host`. For testing purposes you can use the following for a limited time `37298218449d3b5907ee77be300dfe94`.
 You can set them directly as JVM arguments, see step 3.
 
 ### Steps
@@ -39,9 +38,11 @@ mvn clean install
 
 3. **Run the Application**
 
-mvn spring-boot:run -Dspring-boot.run.jvmArguments='-DEXCHANGE_API_LIVE_URL=https://api.exchangerate.host/live -DEXCHANGE_API_ACCESS_KEY=your_access_key'
+mvn spring-boot:run -Dspring-boot.run.jvmArguments='-DEXCHANGE_API_LIVE_URL=http://api.exchangerate.host/live -DEXCHANGE_API_ACCESS_KEY=your_access_key'
 
-The application should now be running on `http://localhost:8080/`.
+OR
+
+mvn spring-boot:run -Dspring-boot.run.jvmArguments='-DEXCHANGE_API_LIVE_URL=http://api.exchangerate.host/live -DEXCHANGE_API_ACCESS_KEY=37298218449d3b5907ee77be300dfe94'
 
 ## API Documentation
 

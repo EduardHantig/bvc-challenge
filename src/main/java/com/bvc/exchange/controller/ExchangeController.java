@@ -9,7 +9,6 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,29 +22,26 @@ public class ExchangeController implements ExchangeApi {
   }
 
   @GetMapping("/exchange-rate")
-  public ResponseEntity<Double> getRate(@RequestParam String base, @RequestParam String currency)
-          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
+  public ResponseEntity<Double> getRate(String base, String currency) throws BadExchangeApiResponseException,
+          SymbolExchangeApiNotFoundException {
     return ResponseEntity.ok(exchangeService.getRateForBaseToSymbol(base, currency));
   }
 
   @GetMapping("/exchange-rates")
-  public ResponseEntity<CurrencyRate> getAllExchangeRates(@RequestParam String base)
-          throws BadExchangeApiResponseException {
+  public ResponseEntity<CurrencyRate> getAllExchangeRates(String base) throws BadExchangeApiResponseException {
     return ResponseEntity.ok(exchangeService.getRatesForBase(base));
   }
 
   @GetMapping("/exchange-conversion")
-  public ResponseEntity<Double> convert(@RequestParam String base, @RequestParam String currency,
-                                        @RequestParam Double amount)
+  public ResponseEntity<Double> convert(String base, String currency, Double amount)
           throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     return ResponseEntity.ok(exchangeService.convertValue(base, currency, amount));
   }
 
   @GetMapping("/exchange-conversions")
-  public ResponseEntity<Map<String, Double>> convertToMultipleCurrencies(
-      @RequestParam String base,
-      @RequestParam List<String> currencies,
-      @RequestParam Double amount) throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
+  public ResponseEntity<Map<String, Double>> convertToMultipleCurrencies(String base, List<String> currencies,
+                                                                         Double amount)
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     return ResponseEntity.ok(exchangeService.convertToMultipleCurrencies(base, currencies, amount));
   }
 }

@@ -6,6 +6,9 @@ import com.bvc.exchange.model.CurrencyRate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ExchangeService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeService.class);
 
   @Value("${exchange.api.liveUrl}")
   private String exchangeApiUrl;
@@ -32,7 +37,9 @@ public class ExchangeService {
     CurrencyRate currencyRate = restTemplate.getForObject(liveUrl, CurrencyRate.class);
 
     if (currencyRate == null || currencyRate.getQuotes() == null || currencyRate.getQuotes().isEmpty()) {
-      throw new BadExchangeApiResponseException("Exchange API response is null or has null or empty quotes!");
+      LOGGER.error("Unexpected payload received. API response is: {}.", currencyRate);
+      throw new BadExchangeApiResponseException("Unexpected API response! Either you asked for non-existent base " +
+              "currency, either bad response received from Exchange API!");
     }
     return currencyRate;
   }
@@ -43,8 +50,9 @@ public class ExchangeService {
 
     Double rate = rates.getQuotes().get(base + symbol);
     if (rate == null) {
-      throw new SymbolExchangeApiNotFoundException("Symbol " + symbol + " is not found in received quotes from " +
-              "Exchange API!");
+      LOGGER.error("Bad request! Provided symbol {} is not found from received quotes {}.", symbol, rates.getQuotes());
+      throw new SymbolExchangeApiNotFoundException("Provided currency symbol " + symbol + " is not found in received " +
+              "quotes from Exchange API!");
     }
     return rates.getQuotes().get(base + symbol);
   }
@@ -63,8 +71,9 @@ public class ExchangeService {
     for (String symbol : symbols) {
       Double rate = rates.getQuotes().get(base + symbol);
       if (rate == null) {
-        throw new SymbolExchangeApiNotFoundException("Symbol " + symbol + " is not found in received quotes from " +
-                "Exchange API!");
+        LOGGER.error("Bad request! Provided symbol {} is not found from received quotes {}.", symbol, rates.getQuotes());
+        throw new SymbolExchangeApiNotFoundException("Provided currency symbol " + symbol + " is not found in " +
+                "received quotes from Exchange API!");
       }
       convertedValues.put(symbol, rate * amount);
     }

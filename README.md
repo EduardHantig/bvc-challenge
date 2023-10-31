@@ -16,11 +16,22 @@ The Exchange Service API provides functionalities to fetch exchange rates from a
 - Java 17 or newer.
 - Maven.
 
+### Environment Variables
+
+Before running the application, make sure to set the following environment variables:
+
+- `EXCHANGE_API_LIVE_URL`: The URL for the live exchange rate API. His value should be `https://api.exchangerate.host/live`
+- `EXCHANGE_API_ACCESS_KEY`: The access key to authenticate requests to the exchange rate API. You should take it from your created account on `https://exchangerate.host`
+
+You can set them directly as JVM arguments, see step 3.
+
 ### Steps
 
-1. **Clone the Repository**
+1. **Clone and open the Repository**
 
 git clone https://github.com/EduardHantig/bvc-challenge.git
+
+cd bvc-challenge
 
 2. **Build the Project**
 
@@ -28,7 +39,7 @@ mvn clean install
 
 3. **Run the Application**
 
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.jvmArguments='-DEXCHANGE_API_LIVE_URL=https://api.exchangerate.host/live -DEXCHANGE_API_ACCESS_KEY=your_access_key'
 
 The application should now be running on `http://localhost:8080/`.
 

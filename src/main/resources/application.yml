@@ -7,4 +7,8 @@ spring:
   cache:
     type: caffeine
     caffeine:
-      spec: maximumSize=50000,expireAfterAccess=60000s
+      spec: maximumSize=50000,expireAfterAccess=60s
+
+springdoc:
+  api-docs:
+    path: /v1/api/exchange

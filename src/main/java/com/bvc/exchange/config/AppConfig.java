@@ -17,13 +17,11 @@ public class AppConfig {
 
   @Bean
   public OpenAPI customOpenAPI() {
-    String baseUrl = "https://bvc-exchange.com/api"; // Replace with your actual base URL
-
     return new OpenAPI()
         .info(new Info()
             .title("Exchange Service API")
             .version("1.0")
-            .description("API for currency exchange operations. Base URL: " + baseUrl)
+            .description("API for currency exchange operations.")
             .contact(new Contact().name("Eduard H").email("h.eduardgabor@gmail.com")));
   }
 }

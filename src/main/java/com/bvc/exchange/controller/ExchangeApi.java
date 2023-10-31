@@ -1,5 +1,7 @@
 package com.bvc.exchange.controller;
 
+import com.bvc.exchange.exception.BadExchangeApiResponseException;
+import com.bvc.exchange.exception.SymbolExchangeApiNotFoundException;
 import com.bvc.exchange.model.CurrencyRate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,24 +19,28 @@ public interface ExchangeApi {
   @Operation(summary = "Get the exchange rate from a base currency to another currency")
   ResponseEntity<Double> getRate(
       @Parameter(description = "Base currency code", required = true) @RequestParam String base,
-      @Parameter(description = "Target currency code", required = true) @RequestParam String currency);
+      @Parameter(description = "Target currency code", required = true) @RequestParam String currency)
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException;
 
   @GetMapping("/exchange-rates")
   @Operation(summary = "Get all exchange rates for a base currency")
   ResponseEntity<CurrencyRate> getAllExchangeRates(
-      @Parameter(description = "Base currency code", required = true) @RequestParam String base);
+      @Parameter(description = "Base currency code", required = true) @RequestParam String base)
+          throws BadExchangeApiResponseException;
 
   @GetMapping("/exchange-conversion")
   @Operation(summary = "Convert a given amount from a base currency to another currency")
   ResponseEntity<Double> convert(
       @Parameter(description = "Base currency code", required = true) @RequestParam String base,
       @Parameter(description = "Target currency code", required = true) @RequestParam String currency,
-      @Parameter(description = "Amount to convert", required = true) @RequestParam Double amount);
+      @Parameter(description = "Amount to convert", required = true) @RequestParam Double amount)
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException;
 
   @GetMapping("/exchange-conversions")
   @Operation(summary = "Convert a given amount from a base currency to multiple other currencies")
   ResponseEntity<Map<String, Double>> convertToMultipleCurrencies(
       @Parameter(description = "Base currency code", required = true) @RequestParam String base,
       @Parameter(description = "List of target currency codes", required = true) @RequestParam List<String> currencies,
-      @Parameter(description = "Amount to convert", required = true) @RequestParam Double amount);
+      @Parameter(description = "Amount to convert", required = true) @RequestParam Double amount)
+          throws SymbolExchangeApiNotFoundException, BadExchangeApiResponseException;
 }

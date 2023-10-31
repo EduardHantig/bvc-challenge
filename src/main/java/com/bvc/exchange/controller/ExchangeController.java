@@ -1,5 +1,7 @@
 package com.bvc.exchange.controller;
 
+import com.bvc.exchange.exception.BadExchangeApiResponseException;
+import com.bvc.exchange.exception.SymbolExchangeApiNotFoundException;
 import com.bvc.exchange.model.CurrencyRate;
 import com.bvc.exchange.service.ExchangeService;
 import java.util.List;
@@ -21,17 +23,21 @@ public class ExchangeController implements ExchangeApi {
   }
 
   @GetMapping("/exchange-rate")
-  public ResponseEntity<Double> getRate(@RequestParam String base, @RequestParam String currency) {
+  public ResponseEntity<Double> getRate(@RequestParam String base, @RequestParam String currency)
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     return ResponseEntity.ok(exchangeService.getRateForBaseToSymbol(base, currency));
   }
 
   @GetMapping("/exchange-rates")
-  public ResponseEntity<CurrencyRate> getAllExchangeRates(@RequestParam String base) {
+  public ResponseEntity<CurrencyRate> getAllExchangeRates(@RequestParam String base)
+          throws BadExchangeApiResponseException {
     return ResponseEntity.ok(exchangeService.getRatesForBase(base));
   }
 
   @GetMapping("/exchange-conversion")
-  public ResponseEntity<Double> convert(@RequestParam String base, @RequestParam String currency, @RequestParam Double amount) {
+  public ResponseEntity<Double> convert(@RequestParam String base, @RequestParam String currency,
+                                        @RequestParam Double amount)
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     return ResponseEntity.ok(exchangeService.convertValue(base, currency, amount));
   }
 
@@ -39,7 +45,7 @@ public class ExchangeController implements ExchangeApi {
   public ResponseEntity<Map<String, Double>> convertToMultipleCurrencies(
       @RequestParam String base,
       @RequestParam List<String> currencies,
-      @RequestParam Double amount) {
+      @RequestParam Double amount) throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     return ResponseEntity.ok(exchangeService.convertToMultipleCurrencies(base, currencies, amount));
   }
 }

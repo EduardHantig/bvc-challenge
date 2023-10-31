@@ -1,5 +1,7 @@
 package com.bvc.exchange.service;
 
+import com.bvc.exchange.exception.BadExchangeApiResponseException;
+import com.bvc.exchange.exception.SymbolExchangeApiNotFoundException;
 import com.bvc.exchange.model.CurrencyRate;
 import java.util.HashMap;
 import java.util.List;
@@ -25,29 +27,46 @@ public class ExchangeService {
   }
 
   @Cacheable(value = "exchangeRates", key = "#base")
-  public CurrencyRate getRatesForBase(String base) {
-    return restTemplate.getForObject(exchangeApiUrl + "?access_key=" + exchangeAccessKey + "&source=" + base, CurrencyRate.class);
+  public CurrencyRate getRatesForBase(String base) throws BadExchangeApiResponseException {
+    String liveUrl = String.format("%s?access_key=%s&source=%s", exchangeApiUrl, exchangeAccessKey, base);
+    CurrencyRate currencyRate = restTemplate.getForObject(liveUrl, CurrencyRate.class);
+
+    if (currencyRate == null || currencyRate.getQuotes() == null || currencyRate.getQuotes().isEmpty()) {
+      throw new BadExchangeApiResponseException("Exchange API response is null or has null or empty quotes!");
+    }
+    return currencyRate;
   }
 
-  public Double getRateForBaseToSymbol(String base, String symbol) {
+  public Double getRateForBaseToSymbol(String base, String symbol) throws BadExchangeApiResponseException,
+          SymbolExchangeApiNotFoundException {
     CurrencyRate rates = getRatesForBase(base);
+
+    Double rate = rates.getQuotes().get(base + symbol);
+    if (rate == null) {
+      throw new SymbolExchangeApiNotFoundException("Symbol " + symbol + " is not found in received quotes from " +
+              "Exchange API!");
+    }
     return rates.getQuotes().get(base + symbol);
   }
 
-  public Double convertValue(String base, String symbol, Double amount) {
+  public Double convertValue(String base, String symbol, Double amount) throws BadExchangeApiResponseException,
+          SymbolExchangeApiNotFoundException {
     Double rate = getRateForBaseToSymbol(base, symbol);
     return rate * amount;
   }
 
-  public Map<String, Double> convertToMultipleCurrencies(String base, List<String> symbols, Double amount) {
+  public Map<String, Double> convertToMultipleCurrencies(String base, List<String> symbols, Double amount)
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     Map<String, Double> convertedValues = new HashMap<>();
     CurrencyRate rates = getRatesForBase(base);
 
     for (String symbol : symbols) {
       Double rate = rates.getQuotes().get(base + symbol);
-      if (rate != null) {
-        convertedValues.put(symbol, rate * amount);
+      if (rate == null) {
+        throw new SymbolExchangeApiNotFoundException("Symbol " + symbol + " is not found in received quotes from " +
+                "Exchange API!");
       }
+      convertedValues.put(symbol, rate * amount);
     }
 
     return convertedValues;

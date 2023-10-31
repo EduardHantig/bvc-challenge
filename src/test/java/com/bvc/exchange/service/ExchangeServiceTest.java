@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.bvc.exchange.exception.BadExchangeApiResponseException;
+import com.bvc.exchange.exception.SymbolExchangeApiNotFoundException;
 import com.bvc.exchange.model.CurrencyRate;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +28,8 @@ class ExchangeServiceTest {
   private RestTemplate restTemplate;
 
   @Test
-  public void testGetRatesForBase() {
+  public void testGetRatesForBase_shouldReturnExpectedRates_whenApiReturnsRates()
+          throws BadExchangeApiResponseException {
     // before
     String base = "USD";
     CurrencyRate mockRate = createMockCurrencyRate();
@@ -42,7 +45,44 @@ class ExchangeServiceTest {
   }
 
   @Test
-  public void testGetRateForBaseToSymbol() {
+  public void testGetRatesForBase_shouldThrowBadExchangeApiResponseException_whenApiResponseIsNull() {
+    // before
+    when(restTemplate.getForObject(anyString(), eq(CurrencyRate.class)))
+            .thenReturn(null);
+
+    // then
+    assertThrows(BadExchangeApiResponseException.class, () -> exchangeService.getRatesForBase("USD"));
+  }
+
+  @Test
+  public void testGetRatesForBase_shouldThrowBadExchangeApiResponseException_whenApiQuotesIsNull() {
+    // before
+    CurrencyRate mockRate = new CurrencyRate();
+    mockRate.setQuotes(null);
+
+    when(restTemplate.getForObject(anyString(), eq(CurrencyRate.class)))
+            .thenReturn(mockRate);
+
+    // then
+    assertThrows(BadExchangeApiResponseException.class, () -> exchangeService.getRatesForBase("USD"));
+  }
+
+  @Test
+  public void testGetRatesForBase_shouldThrowBadExchangeApiResponseException_whenApiQuotesIsEmpty() {
+    // before
+    CurrencyRate mockRate = new CurrencyRate();
+    mockRate.setQuotes(new HashMap<>());
+
+    when(restTemplate.getForObject(anyString(), eq(CurrencyRate.class)))
+            .thenReturn(mockRate);
+
+    // then
+    assertThrows(BadExchangeApiResponseException.class, () -> exchangeService.getRatesForBase("USD"));
+  }
+
+  @Test
+  public void testGetRateForBaseToSymbol_shouldReturnExpectedRate_whenApiReturnsRates()
+          throws BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     // before
     String base = "USD";
     String symbol = "EUR";
@@ -60,7 +100,22 @@ class ExchangeServiceTest {
   }
 
   @Test
-  public void testConvertValue() {
+  public void testGetRateForBaseToSymbol_shouldThrowSymbolExchangeApiNotFoundException_whenSymbolInApiQuotesNotFound() {
+    // before
+    String base = "USD";
+    String symbol = "JPY";
+    CurrencyRate mockRate = createMockCurrencyRate();
+
+    when(restTemplate.getForObject(anyString(), eq(CurrencyRate.class)))
+            .thenReturn(mockRate);
+
+    // then
+    assertThrows(SymbolExchangeApiNotFoundException.class, () -> exchangeService.getRateForBaseToSymbol(base, symbol));
+  }
+
+  @Test
+  public void testConvertValue_shouldReturnConvertedValue_whenApiReturnsRates() throws BadExchangeApiResponseException,
+          SymbolExchangeApiNotFoundException {
     // before
     String base = "USD";
     String symbol = "EUR";
@@ -79,7 +134,8 @@ class ExchangeServiceTest {
   }
 
   @Test
-  public void testConvertToMultipleCurrencies() {
+  public void testConvertToMultipleCurrencies_shouldReturnConvertedCurrencies_whenApiReturnsRates() throws
+          BadExchangeApiResponseException, SymbolExchangeApiNotFoundException {
     // before
     String base = "USD";
     Double amount = 100.0;
@@ -97,6 +153,21 @@ class ExchangeServiceTest {
       expectedConversion.put(symbol, mockRate.getQuotes().get(base + symbol) * amount);
     }
     assertEquals(expectedConversion, result);
+  }
+
+  @Test
+  public void testConvertToMultipleCurrencies_shouldThrowSymbolExchangeApiNotFoundException_whenSymbolInApiQuotesNotFound() {
+    // before
+    String base = "USD";
+    Double amount = 100.0;
+    CurrencyRate mockRate = createMockCurrencyRate();
+
+    when(restTemplate.getForObject(anyString(), eq(CurrencyRate.class)))
+            .thenReturn(mockRate);
+
+    // then
+    assertThrows(SymbolExchangeApiNotFoundException.class,
+            () -> exchangeService.convertToMultipleCurrencies(base, Arrays.asList("EUR", "JPY"), amount));
   }
 
   private CurrencyRate createMockCurrencyRate() {
